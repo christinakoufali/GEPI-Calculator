@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GEPI Calculator</title>
+<style>
+  :root {
+    --font-ui: "Times New Roman", Times, Georgia, serif;
+    --font-mono: ui-monospace, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --surface-2: #eaf0e7;
+    --ink: #1c2a1f;
+    --ink-2: #4c5b4c;
+    --muted: #8b9688;
+    --border: #dbe3d7;
+    --accent: #2f6b4f;
+    --accent-ink: #ffffff;
+    --focus: #2f6b4f;
+
+    --red: #ed1c24;
+    --red-ink: #b3151b;
+    --red-bg: #fde3e3;
+    --amber: #f0c400;
+    --amber-ink: #8a6d00;
+    --amber-bg: #fdf7cf;
+    --green: #4a9a35;
+    --green-ink: #2f6b1f;
+    --green-bg: #e2f0d8;
+    --neutral-wedge: #d7ded3;
+    --pentagon-stroke: #232f26;
+
+    color-scheme: light;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #10160f;
+      --surface: #182018;
+      --surface-2: #1f2a1e;
+      --ink: #edf2ea;
+      --ink-2: #b6c2b2;
+      --muted: #7c8878;
+      --border: #2b352a;
+      --accent: #6fbf8f;
+      --accent-ink: #0c130d;
+      --focus: #6fbf8f;
+
+      --red: #ff4d42;
+      --red-ink: #ff9a91;
+      --red-bg: #3a1613;
+      --amber: #ffd400;
+      --amber-ink: #f0d878;
+      --amber-bg: #3a3013;
+      --green: #5cb84a;
+      --green-ink: #8fe070;
+      --green-bg: #16281a;
+      --neutral-wedge: #2c352a;
+      --pentagon-stroke: #0b110b;
+      color-scheme: dark;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #10160f;
+    --surface: #182018;
+    --surface-2: #1f2a1e;
+    --ink: #edf2ea;
+    --ink-2: #b6c2b2;
+    --muted: #7c8878;
+    --border: #2b352a;
+    --accent: #6fbf8f;
+    --accent-ink: #0c130d;
+    --focus: #6fbf8f;
+
+    --red: #ff4d42;
+    --red-ink: #ff9a91;
+    --red-bg: #3a1613;
+    --amber: #ffd400;
+    --amber-ink: #f0d878;
+    --amber-bg: #3a3013;
+    --green: #5cb84a;
+    --green-ink: #8fe070;
+    --green-bg: #16281a;
+    --neutral-wedge: #2c352a;
+    --pentagon-stroke: #0b110b;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-ui);
+  }
+
+  .page {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 32px 20px 64px;
+  }
+
+  .masthead {
+    max-width: 760px;
+    margin-bottom: 24px;
+  }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 8px;
+    font-weight: 600;
+  }
+
+  h1 {
+    font-family: var(--font-ui);
+    font-weight: 600;
+    font-size: clamp(28px, 4.2vw, 40px);
+    line-height: 1.08;
+    margin: 0 0 10px;
+    text-wrap: balance;
+  }
+
+  .lede {
+    font-size: 15.5px;
+    line-height: 1.55;
+    color: var(--ink-2);
+    margin: 0;
+    max-width: 62ch;
+  }
+
+  /* ---------- summary card ---------- */
+
+  .summary-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px;
+    display: grid;
+    grid-template-columns: minmax(320px, 460px) minmax(240px, 1fr);
+    gap: 24px;
+    align-items: center;
+    margin-bottom: 22px;
+  }
+
+  @media (max-width: 820px) {
+    .summary-card { grid-template-columns: 1fr; }
+  }
+
+  .pictogram-wrap { width: 100%; }
+  .pictogram { width: 100%; height: auto; display: block; }
+
+  .cat-caption {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
+  .wedge-num {
+    font-family: var(--font-mono);
+    font-size: 22px;
+    font-weight: 800;
+  }
+
+  .stats { display: flex; flex-direction: column; gap: 14px; }
+
+  .stats-top { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+
+  .pp-value {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 44px;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--ink);
+  }
+
+  .pp-unit { font-size: 15px; color: var(--muted); margin-left: 4px; font-weight: 500; }
+
+  .class-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 5px 11px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+  }
+
+  .class-pill .dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  .class-pill.is-green { background: var(--green-bg); color: var(--green-ink); }
+  .class-pill.is-yellow { background: var(--amber-bg); color: var(--amber-ink); }
+  .class-pill.is-red { background: var(--red-bg); color: var(--red-ink); }
+  .class-pill.is-neutral { background: var(--surface-2); color: var(--muted); }
+
+  .answered-note {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-2);
+  }
+
+  .provisional-note {
+    font-size: 12px;
+    color: var(--muted);
+    margin: 0;
+  }
+
+  .pp-scale { width: 100%; }
+
+  .pp-track {
+    position: relative;
+    height: 10px;
+    border-radius: 6px;
+    overflow: hidden;
+    display: flex;
+  }
+
+  .pp-track span { display: block; height: 100%; }
+  .pp-track .seg-green { background: var(--green); flex: 14; }
+  .pp-track .seg-yellow { background: var(--amber); flex: 14; }
+  .pp-track .seg-red { background: var(--red); flex: 14; }
+
+  .pp-marker {
+    position: absolute;
+    top: -4px;
+    width: 3px;
+    height: 18px;
+    border-radius: 2px;
+    background: var(--ink);
+    transform: translateX(-50%);
+    left: 0%;
+    transition: left .18s ease;
+    box-shadow: 0 0 0 2px var(--surface);
+  }
+
+  .pp-ticks {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 12px;
+    color: var(--ink-2);
+    padding-top: 4px;
+    border-top: 1px solid var(--border);
+  }
+
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend .dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+  .dot-red { background: var(--red); }
+  .dot-yellow { background: var(--amber); }
+  .dot-green { background: var(--green); }
+
+  .actions { display: flex; gap: 8px; }
+
+  .btn {
+    flex: 1;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 9px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 1px solid var(--border);
+  }
+
+  .btn-primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .btn-ghost { background: transparent; color: var(--ink-2); }
+  .btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  .copy-status { min-height: 14px; font-size: 11.5px; color: var(--accent); margin: 0; }
+
+  /* ---------- example banner ---------- */
+
+  .example-banner {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 13.5px;
+    color: var(--ink-2);
+    line-height: 1.5;
+    margin-bottom: 22px;
+  }
+
+  .example-banner strong { color: var(--ink); }
+
+  .link-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--accent);
+    font: inherit;
+    font-weight: 600;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  /* ---------- category grid ---------- */
+
+  .categories-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+
+  @media (max-width: 720px) {
+    .categories-grid { grid-template-columns: 1fr; }
+  }
+
+  .category {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 18px 6px;
+  }
+
+  .category h2 {
+    font-family: var(--font-ui);
+    font-weight: 600;
+    font-size: 18px;
+    margin: 0 0 4px;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+
+  .cat-swatch {
+    display: inline-block;
+    width: 11px;
+    height: 11px;
+    border-radius: 3px;
+    border: 1px solid rgba(0,0,0,0.18);
+    flex: none;
+  }
+
+  .category-count {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--muted);
+    margin: 0 0 14px;
+  }
+
+  .param { padding: 14px 0; border-top: 1px solid var(--border); }
+  .category .param:first-of-type { border-top: none; padding-top: 4px; }
+
+  .param-head { display: flex; align-items: baseline; gap: 9px; margin-bottom: 9px; }
+
+  .param-num {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  .param-head h3 { font-size: 15px; font-weight: 600; margin: 0; color: var(--ink); }
+
+  .options { display: grid; gap: 7px; }
+
+  .opt {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    text-align: left;
+    width: 100%;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 9px;
+    padding: 9px 11px;
+    font: inherit;
+    font-size: 13px;
+    line-height: 1.42;
+    color: var(--ink-2);
+    cursor: pointer;
+    transition: border-color .12s ease, background-color .12s ease;
+  }
+
+  .opt:hover { border-color: var(--muted); }
+  .opt:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  .opt-tag {
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 5px;
+    margin-top: 1px;
+  }
+
+  .opt-red .opt-tag { background: var(--red-bg); color: var(--red-ink); }
+  .opt-yellow .opt-tag { background: var(--amber-bg); color: var(--amber-ink); }
+  .opt-green .opt-tag { background: var(--green-bg); color: var(--green-ink); }
+
+  .opt-text { flex: 1; }
+
+  .opt-check { flex: none; width: 16px; height: 16px; margin-top: 1px; visibility: hidden; }
+
+  .opt.selected { color: var(--ink); font-weight: 500; }
+  .opt.selected .opt-check { visibility: visible; }
+
+  .opt-red.selected { border-color: var(--red); background: var(--red-bg); }
+  .opt-yellow.selected { border-color: var(--amber); background: var(--amber-bg); }
+  .opt-green.selected { border-color: var(--green); background: var(--green-bg); }
+
+  .opt-red.selected .opt-check { color: var(--red-ink); }
+  .opt-yellow.selected .opt-check { color: var(--amber-ink); }
+  .opt-green.selected .opt-check { color: var(--green-ink); }
+
+  .foot { margin-top: 30px; padding-top: 16px; border-top: 1px solid var(--border); }
+
+  .foot p { font-size: 12px; color: var(--muted); max-width: 74ch; line-height: 1.5; margin: 0 0 6px; }
+  .foot a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <header class="masthead">
+    <h1>GEPI Calculator</h1>
+    <p class="lede">Score a plant extraction procedure across 14 parameters &mdash; raw material, solvent, process, and waste &amp; instrumentation &mdash; using the GEPI penalty-point pictogram: five colour-coded pentagons, the same layout as the GAPI-style figures.</p>
+  </header>
+
+  <div class="example-banner" id="exampleBanner">
+    Showing an illustrative example &mdash; <strong>ultrasound-assisted NaDES extraction</strong>. This is a demo, not your data. <button class="link-btn" id="clearExampleBtn" type="button">Clear it and start your own assessment</button>.
+  </div>
+
+  <section class="summary-card">
+    <div class="pictogram-wrap">
+      <svg class="pictogram" id="pictogram" viewBox="0 0 580 400" role="img" aria-label="GEPI pentagon pictogram"></svg>
+    </div>
+
+    <div class="stats">
+      <div class="stats-top">
+        <div><span class="pp-value" id="ppValue">0.0</span><span class="pp-unit">&Sigma; PPs</span></div>
+        <span class="class-pill is-neutral" id="classPill"><i class="dot"></i><span id="classLabel">&mdash;</span></span>
+      </div>
+
+      <div>
+        <div class="answered-note" id="answeredNote">0 of 14 answered</div>
+        <p class="provisional-note" id="provisionalNote"></p>
+      </div>
+
+      <div class="pp-scale">
+        <div class="pp-track">
+          <span class="seg-green"></span><span class="seg-yellow"></span><span class="seg-red"></span>
+          <div class="pp-marker" id="ppMarker"></div>
+        </div>
+        <div class="pp-ticks"><span>0</span><span>14</span><span>28</span><span>42</span></div>
+      </div>
+
+      <div class="legend">
+        <span class="legend-item"><i class="dot dot-green"></i>Green &mdash; 0 PPs</span>
+        <span class="legend-item"><i class="dot dot-yellow"></i>Yellow &mdash; 1.5 PPs</span>
+        <span class="legend-item"><i class="dot dot-red"></i>Red &mdash; 3 PPs</span>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-ghost" id="resetBtn" type="button">Reset all</button>
+        <button class="btn btn-ghost" id="downloadBtn" type="button">Save pictogram</button>
+        <button class="btn btn-primary" id="copyBtn" type="button">Copy summary</button>
+      </div>
+      <p class="copy-status" id="copyStatus" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <main class="categories-grid" id="formPanel"></main>
+
+  <footer class="foot">
+    <p>GEPI &mdash; Green Extraction Process Index. Each of the 14 parameters carries a penalty score &mdash; Green&nbsp;=&nbsp;0, Yellow&nbsp;=&nbsp;1.5, Red&nbsp;=&nbsp;3 &mdash; summed to a total &Sigma;&nbsp;PPs from 0 (greenest) to 42 (least green), classified Green 0&ndash;14, Yellow 14&ndash;28, Red 28&ndash;42. The four outer pentagons cover raw material, solvent, process, and waste &amp; instrumentation; the centre pentagon reflects the entire procedure.</p>
+    <p>For any inquiries, please consult Prof. Nikolas Fokialakis &mdash; email: <a href="mailto:fokialakis@pharm.uoa.gr">fokialakis@pharm.uoa.gr</a></p>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var CATEGORY_COLOR = {
+    "Raw material": { bg: "#B4D2F5", ink: "#1f4d7a" },
+    "Solvent": { bg: "#FFE495", ink: "#5c4813" },
+    "Process": { bg: "#FFBEA1", ink: "#7a3419" },
+    "Waste and instrumentation": { bg: "#B7DBA0", ink: "#2f5c1c" },
+    "Entire procedure": { bg: "#ED9FA2", ink: "#7a1f27" }
+  };
+
+  var CATEGORIES = [
+    {
+      name: "Raw material",
+      pentagon: "bottomLeft",
+      params: [
+        { id: 1, name: "Collection", options: [
+          { v: "red", text: "Wild harvesting (vulnerable and/or over-harvest)" },
+          { v: "yellow", text: "Plant cultivation (regeneration, environmental education)" },
+          { v: "green", text: "Plant breeding / plant milking / in-vitro culture suspension" }
+        ]},
+        { id: 2, name: "Transport", options: [
+          { v: "red", text: "Required (long-distance)" },
+          { v: "yellow", text: "Required (within the country or neighbors)" },
+          { v: "green", text: "None" }
+        ]},
+        { id: 3, name: "Storage", options: [
+          { v: "red", text: "Under strict conditions (i.e. cold)" },
+          { v: "yellow", text: "Under special conditions (i.e. dark)" },
+          { v: "green", text: "Under normal condition (i.e. room temperature)" }
+        ]},
+        { id: 4, name: "Pre-treatment", options: [
+          { v: "red", text: "Conventional techniques (i.e. drying, grinding, milling)" },
+          { v: "yellow", text: "Novel techniques (i.e. bead milling, extrusion, enzymatic hydrolysis)" },
+          { v: "green", text: "None or coarse shredding" }
+        ]}
+      ]
+    },
+    {
+      name: "Solvent",
+      pentagon: "topLeft",
+      params: [
+        { id: 5, name: "Extraction solvent type", options: [
+          { v: "red", text: "Petroleum-based solvent" },
+          { v: "yellow", text: "Alternative solvent (i.e. water, agro-solvent, fluid supercritic)" },
+          { v: "green", text: "None" }
+        ]},
+        { id: 6, name: "Health hazard", options: [
+          { v: "red", text: "Serious injury on short-term exposure; known or suspected small animal carcinogen; NFPA = 4." },
+          { v: "yellow", text: "Moderately toxic; could cause temporary incapacitation; NFPA = 2 or 3." },
+          { v: "green", text: "Slightly toxic, slight irritant; NFPA health hazard score = 0 or 1." }
+        ]},
+        { id: 7, name: "Safety hazard", options: [
+          { v: "red", text: "Highest NFPA flammability or instability score of 4." },
+          { v: "yellow", text: "Highest NFPA flammability or instability score of 2 or 3, or a special hazard is used." },
+          { v: "green", text: "Highest NFPA flammability or instability score of 0 or 1. No special hazards." }
+        ]}
+      ]
+    },
+    {
+      name: "Process",
+      pentagon: "topRight",
+      params: [
+        { id: 8, name: "Extraction method", options: [
+          { v: "red", text: "Conventional methods (i.e. maceration, percolation)" },
+          { v: "yellow", text: "Modern method (i.e. microwave, ultrasounds)" },
+          { v: "green", text: "“Solvent-free” extraction (i.e. pulse electric field)" }
+        ]},
+        { id: 9, name: "Step numbers", options: [
+          { v: "red", text: "Multi-step procedure" },
+          { v: "yellow", text: "Limited-step procedure" },
+          { v: "green", text: "One-step procedure" }
+        ]},
+        { id: 10, name: "Additional treatment", options: [
+          { v: "red", text: "Advanced treatments (i.e. column chromatography, solid-phase extraction, chemical purification)" },
+          { v: "yellow", text: "Simple treatments (i.e. solvent removal)" },
+          { v: "green", text: "None" }
+        ]}
+      ]
+    },
+    {
+      name: "Waste and instrumentation",
+      pentagon: "bottomRight",
+      params: [
+        { id: 11, name: "Energy", options: [
+          { v: "red", text: "High consumption" },
+          { v: "yellow", text: "Moderate consumption" },
+          { v: "green", text: "None or low consumption" }
+        ]},
+        { id: 12, name: "Volume of petroleum-based solvent consumed", options: [
+          { v: "red", text: "Large" },
+          { v: "yellow", text: "Moderate or small" },
+          { v: "green", text: "None" }
+        ]},
+        { id: 13, name: "Occupational hazard", options: [
+          { v: "red", text: "Chemical and physical (i.e. emission of vapors to the atmosphere, noise)" },
+          { v: "yellow", text: "Chemical or physical (i.e. emission of vapors to the atmosphere, noise)" },
+          { v: "green", text: "None" }
+        ]},
+        { id: 14, name: "Waste treatment", options: [
+          { v: "red", text: "No treatment" },
+          { v: "yellow", text: "Degradation, passivation" },
+          { v: "green", text: "Recycling, production of co-products, no waste" }
+        ]}
+      ]
+    }
+  ];
+
+  var PP = { red: 3, yellow: 1.5, green: 0 };
+  var TAG = { red: "Red", yellow: "Yellow", green: "Green" };
+
+  var EXAMPLE = {
+    1: "yellow", 2: "green", 3: "green", 4: "green",
+    5: "yellow", 6: "green", 7: "green",
+    8: "yellow", 9: "yellow", 10: "yellow",
+    11: "yellow", 12: "green", 13: "green", 14: "yellow"
+  };
+
+  var ALL_PARAMS = [];
+  CATEGORIES.forEach(function (cat) {
+    cat.params.forEach(function (p) { p.category = cat.name; ALL_PARAMS.push(p); });
+  });
+
+  var state = {};
+  ALL_PARAMS.forEach(function (p) { state[p.id] = null; });
+  var exampleMode = true;
+
+  var STORE_KEY = "gepi-calculator-state-v2";
+
+  function loadSaved() {
+    try {
+      var raw = localStorage.getItem(STORE_KEY);
+      if (!raw) return null;
+      var parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === "object") return parsed;
+    } catch (e) {}
+    return null;
+  }
+
+  function persist() {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) {}
+  }
+
+  var saved = loadSaved();
+  if (saved) {
+    var hasAny = Object.keys(saved).some(function (k) { return saved[k]; });
+    if (hasAny) { state = saved; exampleMode = false; }
+  }
+  if (exampleMode) state = Object.assign({}, EXAMPLE);
+
+  // ---------- build the question form ----------
+  var formPanel = document.getElementById("formPanel");
+  var checkSvg = '<svg class="opt-check" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  CATEGORIES.forEach(function (cat) {
+    var section = document.createElement("section");
+    section.className = "category";
+    section.dataset.category = cat.name;
+    section.style.borderTopColor = CATEGORY_COLOR[cat.name].bg;
+    section.style.borderTopWidth = "4px";
+
+    var h2 = document.createElement("h2");
+    h2.innerHTML = '<i class="cat-swatch" style="background:' + CATEGORY_COLOR[cat.name].bg + '"></i>' + cat.name;
+    section.appendChild(h2);
+
+    var count = document.createElement("p");
+    count.className = "category-count";
+    count.textContent = cat.params.length + " parameters";
+    section.appendChild(count);
+
+    cat.params.forEach(function (p) {
+      var row = document.createElement("div");
+      row.className = "param";
+      row.dataset.param = p.id;
+
+      var head = document.createElement("div");
+      head.className = "param-head";
+      head.innerHTML = '<span class="param-num">' + String(p.id).padStart(2, "0") + '</span><h3>' + p.name + '</h3>';
+      row.appendChild(head);
+
+      var opts = document.createElement("div");
+      opts.className = "options";
+
+      p.options.forEach(function (o) {
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "opt opt-" + o.v;
+        btn.dataset.param = p.id;
+        btn.dataset.value = o.v;
+        btn.id = "opt-" + p.id + "-" + o.v;
+        btn.innerHTML =
+          '<span class="opt-tag">' + TAG[o.v] + '</span>' +
+          '<span class="opt-text">' + o.text + '</span>' +
+          checkSvg;
+        btn.addEventListener("click", function () { onSelect(p.id, o.v); });
+        opts.appendChild(btn);
+      });
+
+      row.appendChild(opts);
+      section.appendChild(row);
+    });
+
+    formPanel.appendChild(section);
+  });
+
+  // ---------- pentagon pictogram ----------
+  var svgNS = "http://www.w3.org/2000/svg";
+  var svg = document.getElementById("pictogram");
+
+  // Shape traced from the manuscript figure: a regular, point-down pentagon
+  // (flat top edge), normalized 0-1. A=top-right, B=top-left, C=left, D=bottom, E=right.
+  var PENT = {
+    A: [0.807, 0], B: [0.188, 0.006], C: [0, 0.618], D: [0.496, 1], E: [1, 0.618]
+  };
+  var HUB = avg([PENT.A, PENT.B, PENT.C, PENT.D, PENT.E]);
+  var MID_BC = avg([PENT.B, PENT.C]);
+  var MID_CD = avg([PENT.C, PENT.D]);
+
+  function avg(pts) {
+    var x = 0, y = 0;
+    pts.forEach(function (p) { x += p[0]; y += p[1]; });
+    return [x / pts.length, y / pts.length];
+  }
+
+  // Named regions (unmirrored coordinates; mirroring is applied per-instance at draw time).
+  var REG = {
+    left3: [PENT.B, PENT.C, PENT.D, HUB],
+    tri3: [PENT.D, PENT.E, HUB],
+    top3: [PENT.E, PENT.A, PENT.B, HUB],
+    top4: [PENT.A, PENT.B, MID_BC, HUB],
+    left4: [MID_BC, PENT.C, MID_CD, HUB],
+    bottom4: [MID_CD, PENT.D, PENT.E, HUB],
+    tri4: [PENT.E, PENT.A, HUB]
+  };
+
+  // Per-pentagon region order, matched to the numbering in the manuscript's Fig. 2 template
+  // (traced from the supplied reference image, not just a reading-order guess).
+  var ORDER_SOLVENT = ["tri3", "left3", "top3"];       // 5, 6, 7
+  var ORDER_PROCESS = ["tri3", "top3", "left3"];        // 8, 9, 10 (mirrored pentagon)
+  var ORDER_RAW = ["tri4", "bottom4", "left4", "top4"]; // 1, 2, 3, 4
+  var ORDER_WASTE = ["tri4", "top4", "left4", "bottom4"]; // 11, 12, 13, 14
+
+  // Pentagon instance boxes, proportioned from the manuscript layout (image px, same units throughout).
+  var LAYOUT = {
+    topLeft: { x: 195, y: 156, w: 374, h: 357, order: ORDER_SOLVENT, mirror: false },
+    topRight: { x: 931, y: 156, w: 374, h: 357, order: ORDER_PROCESS, mirror: true },
+    bottomLeft: { x: 122, y: 622, w: 374, h: 356, order: ORDER_RAW, mirror: false },
+    bottomRight: { x: 1004, y: 622, w: 374, h: 356, order: ORDER_WASTE, mirror: true },
+    center: { x: 530, y: 447, w: 440, h: 418, order: null, mirror: false }
+  };
+
+  var PAD = 26;
+  var bbox = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity };
+  Object.keys(LAYOUT).forEach(function (k) {
+    var L = LAYOUT[k];
+    bbox.minX = Math.min(bbox.minX, L.x);
+    bbox.minY = Math.min(bbox.minY, L.y);
+    bbox.maxX = Math.max(bbox.maxX, L.x + L.w);
+    bbox.maxY = Math.max(bbox.maxY, L.y + L.h);
+  });
+  var vbW = (bbox.maxX - bbox.minX) + PAD * 2;
+  var vbH = (bbox.maxY - bbox.minY) + PAD * 2;
+  svg.setAttribute("viewBox", "0 0 " + vbW + " " + vbH);
+
+  function toGlobal(pt, L) {
+    var px = L.mirror ? 1 - pt[0] : pt[0];
+    return [
+      (L.x - bbox.minX + PAD) + px * L.w,
+      (L.y - bbox.minY + PAD) + pt[1] * L.h
+    ];
+  }
+
+  function polyToPoints(poly, L) {
+    return poly.map(function (pt) { var g = toGlobal(pt, L); return g[0] + "," + g[1]; }).join(" ");
+  }
+
+  function centroid(poly, L) {
+    var pts = poly.map(function (pt) { return toGlobal(pt, L); });
+    var c = avg(pts);
+    return c;
+  }
+
+  var wedgeEls = {};   // paramId -> polygon element
+  var labelEls = {};   // paramId -> text element
+  var centerPoly;
+
+  function drawCaptionChip(g, cx, cy, label, colors) {
+    var charW = 6.9;
+    var padX = 11, h = 23;
+    var w = Math.max(50, label.length * charW + padX * 2);
+    var rect = document.createElementNS(svgNS, "rect");
+    rect.setAttribute("x", cx - w / 2);
+    rect.setAttribute("y", cy - h / 2);
+    rect.setAttribute("width", w);
+    rect.setAttribute("height", h);
+    rect.setAttribute("rx", h / 2);
+    rect.setAttribute("fill", colors.bg);
+    rect.setAttribute("stroke", "rgba(0,0,0,0.18)");
+    rect.setAttribute("stroke-width", "1");
+    g.appendChild(rect);
+
+    var text = document.createElementNS(svgNS, "text");
+    text.setAttribute("x", cx);
+    text.setAttribute("y", cy + 1);
+    text.setAttribute("text-anchor", "middle");
+    text.setAttribute("dominant-baseline", "central");
+    text.setAttribute("class", "cat-caption");
+    text.setAttribute("fill", colors.ink);
+    text.textContent = label;
+    g.appendChild(text);
+  }
+
+  CATEGORIES.forEach(function (cat) {
+    var L = LAYOUT[cat.pentagon];
+    var g = document.createElementNS(svgNS, "g");
+    cat.params.forEach(function (p, i) {
+      var region = REG[L.order[i]];
+      var poly = document.createElementNS(svgNS, "polygon");
+      poly.setAttribute("points", polyToPoints(region, L));
+      poly.setAttribute("fill", "var(--neutral-wedge)");
+      poly.setAttribute("stroke", "var(--pentagon-stroke)");
+      poly.setAttribute("stroke-width", "2");
+      poly.setAttribute("stroke-linejoin", "round");
+      var titleEl = document.createElementNS(svgNS, "title");
+      titleEl.textContent = String(p.id).padStart(2, "0") + " " + p.name;
+      poly.appendChild(titleEl);
+      g.appendChild(poly);
+      wedgeEls[p.id] = poly;
+
+      var c = centroid(region, L);
+      var text = document.createElementNS(svgNS, "text");
+      text.setAttribute("x", c[0]);
+      text.setAttribute("y", c[1]);
+      text.setAttribute("text-anchor", "middle");
+      text.setAttribute("dominant-baseline", "central");
+      text.setAttribute("class", "wedge-num");
+      text.setAttribute("fill", "#2a2110");
+      text.setAttribute("stroke", "rgba(255,255,255,0.55)");
+      text.setAttribute("stroke-width", "5");
+      text.setAttribute("paint-order", "stroke");
+      text.textContent = String(p.id);
+      g.appendChild(text);
+      labelEls[p.id] = text;
+    });
+
+    svg.appendChild(g);
+  });
+
+  // center pentagon (overall)
+  (function buildCenter() {
+    var L = LAYOUT.center;
+    var g = document.createElementNS(svgNS, "g");
+    var poly = document.createElementNS(svgNS, "polygon");
+    poly.setAttribute("points", polyToPoints([PENT.A, PENT.B, PENT.C, PENT.D, PENT.E], L));
+    poly.setAttribute("fill", "var(--neutral-wedge)");
+    poly.setAttribute("stroke", "var(--pentagon-stroke)");
+    poly.setAttribute("stroke-width", "2.5");
+    poly.setAttribute("stroke-linejoin", "round");
+    var titleEl = document.createElementNS(svgNS, "title");
+    titleEl.textContent = "Overall procedure";
+    poly.appendChild(titleEl);
+    g.appendChild(poly);
+    centerPoly = poly;
+
+    svg.appendChild(g);
+  })();
+
+  var colorVar = { red: "var(--red)", yellow: "var(--amber)", green: "var(--green)" };
+
+  function paramInfo(id, value) {
+    var p = ALL_PARAMS.filter(function (x) { return x.id === id; })[0];
+    var o = p.options.filter(function (x) { return x.v === value; })[0];
+    return { param: p, option: o };
+  }
+
+  function classify(pp) {
+    if (pp < 14) return "green";
+    if (pp < 28) return "yellow";
+    return "red";
+  }
+
+  function render() {
+    var sum = 0, answered = 0;
+    ALL_PARAMS.forEach(function (p) {
+      var val = state[p.id];
+      var wedge = wedgeEls[p.id];
+      var label = labelEls[p.id];
+
+      document.querySelectorAll('.opt[data-param="' + p.id + '"]').forEach(function (btn) {
+        btn.classList.toggle("selected", val !== null && btn.dataset.value === val);
+      });
+
+      if (val === null) {
+        wedge.setAttribute("fill", "var(--neutral-wedge)");
+        label.setAttribute("opacity", "0.5");
+        label.setAttribute("fill", "#000000");
+        label.setAttribute("stroke", "rgba(255,255,255,0.65)");
+      } else {
+        wedge.setAttribute("fill", colorVar[val]);
+        label.setAttribute("opacity", "0.9");
+        label.setAttribute("fill", "#000000");
+        label.setAttribute("stroke", "rgba(255,255,255,0.65)");
+        sum += PP[val];
+        answered += 1;
+      }
+    });
+
+    var ppEl = document.getElementById("ppValue");
+    var noteEl = document.getElementById("answeredNote");
+    var provEl = document.getElementById("provisionalNote");
+    var marker = document.getElementById("ppMarker");
+    var pill = document.getElementById("classPill");
+    var pillLabel = document.getElementById("classLabel");
+
+    noteEl.textContent = answered + " of " + ALL_PARAMS.length + " answered";
+    ppEl.textContent = sum.toFixed(1);
+    marker.style.left = Math.min(100, (sum / 42) * 100) + "%";
+    marker.style.opacity = answered === 0 ? "0.25" : "1";
+
+    pill.classList.remove("is-green", "is-yellow", "is-red", "is-neutral");
+    if (answered === 0) {
+      pillLabel.textContent = "—";
+      pill.classList.add("is-neutral");
+      centerPoly.setAttribute("fill", "var(--neutral-wedge)");
+      provEl.textContent = "";
+    } else {
+      var cls = classify(sum);
+      var label = cls.charAt(0).toUpperCase() + cls.slice(1);
+      pillLabel.textContent = answered === ALL_PARAMS.length ? label : label + " (provisional)";
+      pill.classList.add("is-" + cls);
+      centerPoly.setAttribute("fill", colorVar[cls]);
+      provEl.textContent = answered === ALL_PARAMS.length
+        ? ""
+        : "Provisional — based on " + answered + " of " + ALL_PARAMS.length + " parameters so far.";
+    }
+
+    persist();
+  }
+
+  function onSelect(paramId, value) {
+    if (exampleMode) {
+      exampleMode = false;
+      var b = document.getElementById("exampleBanner");
+      if (b) b.remove();
+      ALL_PARAMS.forEach(function (p) { state[p.id] = null; });
+    }
+    state[paramId] = value;
+    render();
+  }
+
+  var exBanner = document.getElementById("exampleBanner");
+  if (!exampleMode && exBanner) exBanner.remove();
+
+  document.getElementById("clearExampleBtn") && document.getElementById("clearExampleBtn").addEventListener("click", function () {
+    exampleMode = false;
+    var b = document.getElementById("exampleBanner");
+    if (b) b.remove();
+    ALL_PARAMS.forEach(function (p) { state[p.id] = null; });
+    render();
+  });
+
+  document.getElementById("resetBtn").addEventListener("click", function () {
+    exampleMode = false;
+    var b = document.getElementById("exampleBanner");
+    if (b) b.remove();
+    ALL_PARAMS.forEach(function (p) { state[p.id] = null; });
+    render();
+    document.getElementById("copyStatus").textContent = "";
+  });
+
+  document.getElementById("downloadBtn").addEventListener("click", function () {
+    var status = document.getElementById("copyStatus");
+    var srcSvg = document.getElementById("pictogram");
+    var clone = srcSvg.cloneNode(true);
+
+    // Resolve any CSS custom-property fills/strokes (var(--red), var(--pentagon-stroke), ...)
+    // to concrete colors, since a rasterized/standalone SVG has no access to the page's
+    // CSS variables.
+    var origEls = srcSvg.querySelectorAll("*");
+    var cloneEls = clone.querySelectorAll("*");
+    for (var i = 0; i < origEls.length; i++) {
+      var o = origEls[i], c = cloneEls[i];
+      var cs = window.getComputedStyle(o);
+      ["fill", "stroke"].forEach(function (prop) {
+        var attr = o.getAttribute(prop);
+        if (attr && attr.indexOf("var(") !== -1) {
+          c.setAttribute(prop, cs[prop]);
+        }
+      });
+    }
+
+    var vb = srcSvg.viewBox.baseVal;
+    var w = vb && vb.width ? vb.width : 580;
+    var h = vb && vb.height ? vb.height : 400;
+    clone.setAttribute("width", w);
+    clone.setAttribute("height", h);
+    clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+
+    // White background rect behind everything, so the exported image reads correctly
+    // when pasted into a manuscript regardless of the page's current light/dark theme.
+    var bgRect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    bgRect.setAttribute("x", "0");
+    bgRect.setAttribute("y", "0");
+    bgRect.setAttribute("width", String(w));
+    bgRect.setAttribute("height", String(h));
+    bgRect.setAttribute("fill", "#ffffff");
+    clone.insertBefore(bgRect, clone.firstChild);
+
+    var svgText = new XMLSerializer().serializeToString(clone);
+    var svgBlob = new Blob([svgText], { type: "image/svg+xml;charset=utf-8" });
+    var svgUrl = URL.createObjectURL(svgBlob);
+
+    function baseName() {
+      var pp = document.getElementById("ppValue").textContent.trim();
+      var cls = document.getElementById("classLabel").textContent.trim();
+      var safeCls = /^[A-Za-z]+$/.test(cls) ? cls : "GEPI";
+      return "GEPI-pictogram-" + safeCls + "-" + pp + "PP";
+    }
+
+    // Two hosting contexts: published as a claude.ai artifact (sandboxed — a plain
+    // <a download> or script-driven save silently does nothing there; must go through
+    // the platform's `downloads` capability) or a self-hosted static file, e.g. on
+    // GitHub Pages (no `window.claude`, so use the ordinary anchor-download trick).
+    function saveFile(filename, blob) {
+      function classicDownload() {
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+        return Promise.resolve({ ok: true });
+      }
+      if (window.claude && typeof window.claude.use === "function") {
+        return window.claude.use("downloads").then(function (downloads) {
+          if (!downloads) return classicDownload();
+          return downloads.save({ filename: filename, data: blob }).then(
+            function () { return { ok: true }; },
+            function (err) {
+              var code = err && err.code;
+              if (code === "declined") return { ok: false, reason: "declined" };
+              if (code === "rate_limited") return { ok: false, reason: "rate_limited" };
+              // Anything else (unavailable, not_granted, ...) — fall back so the
+              // button still works rather than silently doing nothing.
+              return classicDownload();
+            }
+          );
+        }).catch(classicDownload);
+      }
+      return classicDownload();
+    }
+
+    var img = new Image();
+    img.onload = function () {
+      var scale = 3; // ~3x for crisp print/manuscript resolution
+      var canvas = document.createElement("canvas");
+      canvas.width = w * scale;
+      canvas.height = h * scale;
+      var ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(svgUrl);
+      canvas.toBlob(function (pngBlob) {
+        if (!pngBlob) {
+          saveFile(baseName() + ".svg", svgBlob).then(function (r) {
+            if (status) status.textContent = r.ok ? "Couldn't render a PNG — saved as SVG instead." : "";
+          });
+          return;
+        }
+        saveFile(baseName() + ".png", pngBlob).then(function (r) {
+          if (!status) return;
+          if (r.ok) status.textContent = "Pictogram saved as PNG.";
+          else if (r.reason === "declined") status.textContent = "";
+          else if (r.reason === "rate_limited") status.textContent = "A save is already in progress — try again in a moment.";
+        });
+      }, "image/png");
+    };
+    img.onerror = function () {
+      // Rasterizing failed (rare, e.g. very strict browser policy) — fall back to a
+      // plain SVG download, which still opens fine in any image viewer or Word/PowerPoint.
+      URL.revokeObjectURL(svgUrl);
+      saveFile(baseName() + ".svg", svgBlob).then(function (r) {
+        if (status) status.textContent = r.ok ? "Pictogram saved as SVG." : "";
+      });
+    };
+    img.src = svgUrl;
+  });
+
+  document.getElementById("copyBtn").addEventListener("click", function () {
+    var lines = [];
+    lines.push("GEPI — Green Extraction Process Index");
+    var sum = 0, answered = 0;
+    CATEGORIES.forEach(function (cat) {
+      lines.push("");
+      lines.push(cat.name.toUpperCase());
+      cat.params.forEach(function (p) {
+        var val = state[p.id];
+        if (val === null) {
+          lines.push("  " + String(p.id).padStart(2, "0") + " " + p.name + ": (not answered)");
+        } else {
+          var info = paramInfo(p.id, val);
+          lines.push("  " + String(p.id).padStart(2, "0") + " " + p.name + ": " + TAG[val] + " (" + PP[val].toFixed(1) + " PP) — " + info.option.text);
+          sum += PP[val];
+          answered += 1;
+        }
+      });
+    });
+    lines.push("");
+    if (answered > 0) {
+      var cls = classify(sum);
+      var label = cls.charAt(0).toUpperCase() + cls.slice(1);
+      lines.push("Σ PPs: " + sum.toFixed(1) + " / 42 — " + label + (answered === ALL_PARAMS.length ? "" : " (provisional, " + answered + " of " + ALL_PARAMS.length + " answered)"));
+    } else {
+      lines.push("Σ PPs: not yet available (0 parameters answered)");
+    }
+
+    var text = lines.join("\n");
+    var status = document.getElementById("copyStatus");
+
+    function fallback() {
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand("copy");
+        status.textContent = "Copied to clipboard.";
+      } catch (e) {
+        status.textContent = "Couldn't copy automatically — select the summary text manually.";
+      }
+      document.body.removeChild(ta);
+    }
+
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function () {
+          status.textContent = "Copied to clipboard.";
+        }).catch(fallback);
+      } else {
+        fallback();
+      }
+    } catch (e) {
+      fallback();
+    }
+  });
+
+  render();
+})();
+</script>
+
+</body></html>
